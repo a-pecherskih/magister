@@ -2,6 +2,7 @@ package ulstu.pecherskih.diplom.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ulstu.pecherskih.diplom.model.BlockStmtNode;
 import ulstu.pecherskih.diplom.model.ClassNode;
 import ulstu.pecherskih.diplom.model.MethodNode;
 import ulstu.pecherskih.diplom.model.PackageNode;
@@ -16,7 +17,7 @@ public class GraphService {
     @Autowired
     ClassService classService;
     @Autowired
-    ClassFieldService classFieldService;
+    VariableService classFieldService;
     @Autowired
     MethodService methodService;
     @Autowired
@@ -47,7 +48,7 @@ public class GraphService {
                     methodArgumentService.save(methodArgumentDTO, methodNode);
                 }
                 for (BlockStmtDTO blockStmtDTO : methodDTO.getBlockStmts()) {
-                    blockStmtService.save(blockStmtDTO, methodNode);
+                    BlockStmtNode blockStmtNode = blockStmtService.save(blockStmtDTO, methodNode);
                 }
             }
             for (ClassFieldDTO classFieldDTO : childClassDTO.getFields()) {
@@ -55,5 +56,4 @@ public class GraphService {
             }
         }
     }
-
 }
