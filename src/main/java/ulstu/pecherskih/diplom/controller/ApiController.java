@@ -35,7 +35,17 @@ public class ApiController {
     public void pars() throws FileNotFoundException {
         this.classService.deleteAll();//удаляем все из базы
 
-        FileInfoDTO project = this.parserService.parser("D:/0_Магистратура/курсач/parscodemag");
+        this.parseProject("D:/0_Магистратура/курсач/test3");
+        this.parseProject("D:/0_Магистратура/курсач/test4");
+    }
+
+//    @GetMapping("/getInfo/{name}")
+//    public Customer getInfo(@PathVariable String name) {
+//        return repository.findByName(name);
+//    }
+
+    private void parseProject(String path) throws FileNotFoundException {
+        FileInfoDTO project = this.parserService.parser(path);
 
         PackageDTO packageDTO = javaParserService.fillProject(project);
 
@@ -43,10 +53,5 @@ public class ApiController {
             this.graphService.buildGraph(packageDTO);
         }
     }
-
-//    @GetMapping("/getInfo/{name}")
-//    public Customer getInfo(@PathVariable String name) {
-//        return repository.findByName(name);
-//    }
 
 }

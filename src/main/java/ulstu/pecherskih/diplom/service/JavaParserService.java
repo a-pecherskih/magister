@@ -7,13 +7,8 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
-import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.visitor.GenericVisitor;
-import com.github.javaparser.ast.visitor.VoidVisitor;
-import org.checkerframework.checker.nullness.Opt;
+import com.github.javaparser.ast.stmt.*;
 import org.springframework.stereotype.Service;
 import ulstu.pecherskih.diplom.modelDTO.*;
 
@@ -59,6 +54,7 @@ public class JavaParserService {
 
     /**
      * Парсинг полей класса
+     *
      * @param cu
      * @return
      */
@@ -83,6 +79,7 @@ public class JavaParserService {
 
     /**
      * Парсинг полей класса
+     *
      * @param cu
      * @return
      */
@@ -134,116 +131,146 @@ public class JavaParserService {
         List<BlockStmtDTO> blockStmtDTOs = new ArrayList<>();
 
         for (Statement s : statements) {
-            List<Node> children = s.getChildNodes();
-
-            String name = "";
-            String type = "";
-            String value = "";
-
-            boolean hasMethodCall = false;
-            boolean hasVariable = false;
-            boolean hasExpr = false;
-
-            for (Node child : children) {
-                /**
-                 * Переменная
-                 */
-                if (child instanceof VariableDeclarationExpr) {
-                    hasVariable = true;
-                    name = ((VariableDeclarationExpr) child).getVariables().get(0).getNameAsString();
-
-                    Expression var = ((VariableDeclarationExpr) child).getVariables().get(0).getInitializer().orElse(null);
-                    if (var instanceof MethodCallExpr) {
-                        value = ((MethodCallExpr) var).getNameAsString();
-
-                        Expression e = ((MethodCallExpr) var).getScope().orElse(null);
-                        if (e instanceof NameExpr) {
-                            value = ((NameExpr) e).getNameAsString() + "." + value;
-                        }
-                    }
-
-                    if (var instanceof StringLiteralExpr) {
-                        value = ((StringLiteralExpr) var).getValue();
-                    }
-                    if (var instanceof IntegerLiteralExpr) {
-                        value = ((IntegerLiteralExpr) var).getValue();
-                    }
-                    if (var instanceof ObjectCreationExpr) {
-                        value = ((ObjectCreationExpr) var).getTypeAsString();
-                    }
-
-                    /**
-                     * Метод
-                     */
-                } else if (child instanceof MethodCallExpr) {
-                    hasMethodCall = true;
-                    name = ((MethodCallExpr) child).getNameAsString();
-
-                    Expression e = ((MethodCallExpr) child).getScope().orElse(null);
-                    if (e instanceof NameExpr) {
-                        name = ((NameExpr) e).getNameAsString() + "." + name;
-                    }
-                    if (e instanceof FieldAccessExpr) {
-                        name = ((FieldAccessExpr) e).getNameAsString() + "." + name;
-
-                        Expression scope = ((FieldAccessExpr) e).getScope();
-                        if (scope instanceof NameExpr) {
-                            name = ((NameExpr) scope).getNameAsString() + "." + name;
-                        }
-                    }
-
-                    String args = "";
-                    for (Expression arg : ((MethodCallExpr) child).getArguments()) {
-                        Expression argScope = ((MethodCallExpr) child).getScope().orElse(null);
-                        if (argScope instanceof NameExpr) {
-                            args = ((NameExpr) argScope).getNameAsString() + ".";
-                        }
-
-                        if (arg instanceof MethodCallExpr) {
-                            args = args + ((MethodCallExpr) arg).getNameAsString();
-                        }
-                        if (arg instanceof VariableDeclarationExpr) {
-                            args = args + ((VariableDeclarationExpr) arg).getVariables().get(0).getNameAsString();
-                        }
-                        if (arg instanceof ObjectCreationExpr) {
-                            args = args + ((ObjectCreationExpr) arg).getTypeAsString();
-                        }
-                        if (arg instanceof StringLiteralExpr) {
-                            args = args + ((StringLiteralExpr) arg).getValue();
-                        }
-                        if (arg instanceof IntegerLiteralExpr) {
-                            args = args + ((IntegerLiteralExpr) arg).getValue();
-                        }
-                    }
-
-                    value = args;
-
-                    /**
-                     * Цикл
-                     */
-                } else if (child instanceof BinaryExpr) {
-                    hasExpr = true; // значит есть VariableDeclarator
-                } else {
-//                    name = child.getClass().getName();
-//                    value = child.getClass().getName();
-                }
-            }
-
-            if (hasExpr) {
-                type = "цикл";
-            } else if (hasMethodCall) {
-                type = "вызов функции";
-            } else if (hasVariable) {
-                type = "присвоение переменной";
-            } else {
-                type = "что-то другое";
-            }
-
-            BlockStmtDTO blockStmtDTO = new BlockStmtDTO(type, name, value);
+            BlockStmtDTO blockStmtDTO = this.parseStatement(s);
 
             blockStmtDTOs.add(blockStmtDTO);
         }
 
         return blockStmtDTOs;
+    }
+
+    /**
+     * @param cycleBlock
+     * @return
+     */
+    private List<BlockStmtDTO> parseCycleBlock(Statement cycleBlock) {
+
+        List<Node> children = cycleBlock.getChildNodes();
+        List<BlockStmtDTO> result = new ArrayList<>();
+
+        for (Node blockChild : children) {
+            if (blockChild instanceof SwitchEntry) {
+                return this.parseSwitch(cycleBlock);
+            }
+            if (!(blockChild instanceof BlockStmt)) continue;
+            //blockChild instanceof catch учитывать ли?
+
+            NodeList<Statement> statements = ((BlockStmt) blockChild).getStatements();
+
+            for (Statement s : statements) {
+                BlockStmtDTO childStmtDTO = this.parseStatement(s);
+
+                result.add(childStmtDTO);
+            }
+        }
+
+
+        return result;
+    }
+
+    private BlockStmtDTO parseStatement(Statement s) {
+        String name = "";
+        String type = "";
+        String value = "";
+        List<BlockStmtDTO> blockStmtsInBlockStmts = new ArrayList<>();
+
+        if (s instanceof ExpressionStmt && s.getChildNodes().size() == 1) {
+            Node child = s.getChildNodes().get(0);
+            if (child instanceof VariableDeclarationExpr || child instanceof BooleanLiteralExpr || child instanceof UnaryExpr || child instanceof AssignExpr) {
+                type = "VARIABLE";
+            } else if (child instanceof MethodCallExpr) {
+                type = "METHOD";
+            } else if (child instanceof BinaryExpr || child instanceof SwitchStmt || child instanceof IfStmt) {
+                type = "BINARY";
+            } else {
+                type = "other";
+            }
+        } else {
+            if (s instanceof ThrowStmt) {
+                type = "THROW";
+            } else if (s instanceof ForStmt
+                    || s instanceof WhileStmt
+                    || s instanceof DoStmt
+                    || s instanceof ForEachStmt
+                    || s instanceof TryStmt) {
+                type = "BLOCK";
+
+                blockStmtsInBlockStmts = this.parseCycleBlock(s);
+            } else if (s instanceof IfStmt) {
+                type = "IF";
+
+                blockStmtsInBlockStmts = this.parseIf(s);
+            } else if (s instanceof SwitchStmt) {
+                type = "SWITCH";
+
+                blockStmtsInBlockStmts = this.parseSwitch(s);
+            } else if (s instanceof ReturnStmt) {
+                type = "RETURN";
+            } else if (s instanceof BreakStmt) {
+                type = "BREAK";
+            } else if (s instanceof ContinueStmt) {
+                type = "CONTINUE";
+            } else {
+                type = "other 3";
+            }
+
+            value = s.toString();
+        }
+
+        BlockStmtDTO childStmtDTO = new BlockStmtDTO(type, name, value);
+        childStmtDTO.setBlockStmts(blockStmtsInBlockStmts);
+
+        return childStmtDTO;
+    }
+
+    private List<BlockStmtDTO> parseSwitch(Statement cycleBlock) {
+        List<BlockStmtDTO> result = new ArrayList<>();
+
+        for (Node blockChild : cycleBlock.getChildNodes()) {
+            if (blockChild instanceof SwitchEntry) {
+                BlockStmtDTO childStmtDTO = new BlockStmtDTO("BLOCK", "", "");
+                List<BlockStmtDTO> blockStmtsInBlockStmts = new ArrayList<>();
+
+                for (Statement s : ((SwitchEntry) blockChild).getStatements()) {
+                    blockStmtsInBlockStmts.add(this.parseStatement(s));
+
+                }
+
+                childStmtDTO.setBlockStmts(blockStmtsInBlockStmts);
+
+                result.add(childStmtDTO);
+            }
+        }
+
+        return result;
+    }
+
+    private List<BlockStmtDTO> parseIf(Statement cycleBlock) {
+        List<BlockStmtDTO> result = new ArrayList<>();
+
+        for (Node blockChild : cycleBlock.getChildNodes()) {
+            if (blockChild instanceof BlockStmt) {
+                BlockStmtDTO ifBlock = new BlockStmtDTO("BLOCK", "", blockChild.toString());
+
+                for (Statement s : ((BlockStmt) blockChild).getStatements()) {
+                    ifBlock.addBlockStmt(this.parseStatement(s));
+                }
+
+                result.add(ifBlock);
+            }
+        }
+
+        //если просто if {} else {}, то в result уже будет 2 блока
+        if (result.size() < 2) {
+            Optional<Statement> s = ((IfStmt) cycleBlock).getElseStmt();
+
+            if (s.isPresent()) {
+                List<BlockStmtDTO> elseIfBLocks = this.parseIf(s.get());
+
+                result.addAll(elseIfBLocks);
+            }
+        }
+
+        return result;
     }
 }
