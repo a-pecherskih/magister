@@ -15,7 +15,7 @@ public class MethodArgumentNode {
 
     private String type;
 
-    @Relationship(type = "ARG-METHOD", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "HAS_ARG", direction = Relationship.Direction.OUTGOING)
     private MethodNode methodNode;
 
     public MethodArgumentNode() {

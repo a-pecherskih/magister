@@ -16,13 +16,13 @@ public class ClassNode {
 
     private String name;
 
-    @Relationship(type = "RATED", direction = Direction.INCOMING)
+    @Relationship(type = "HAS_FIELD", direction = Direction.INCOMING)
     private Set<ClassFieldNode> fields;
 
-    @Relationship(type = "RATED", direction = Direction.INCOMING)
+    @Relationship(type = "HAS_METHOD", direction = Direction.INCOMING)
     private Set<MethodNode> methods;
 
-    @Relationship(type = "RATED", direction = Direction.OUTGOING)
+    @Relationship(type = "HAS_CLASS", direction = Direction.OUTGOING)
     private PackageNode packageNode;
 
     public ClassNode() {

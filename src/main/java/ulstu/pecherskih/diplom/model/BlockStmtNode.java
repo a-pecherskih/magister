@@ -18,10 +18,10 @@ public class BlockStmtNode {
     private String type;
     private String value;
 
-    @Relationship(type = "BLOCK-METHOD", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "HAS_BLOCK", direction = Relationship.Direction.OUTGOING)
     private MethodNode methodNode;
 
-    @Relationship(type = "BLOCK-BODY", direction = Relationship.Direction.INCOMING)
+    @Relationship(type = "HAS_BLOCK", direction = Relationship.Direction.INCOMING)
     private Set<BlockStmtNode> blockStmts;
 
     public BlockStmtNode() {

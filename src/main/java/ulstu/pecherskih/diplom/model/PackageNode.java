@@ -13,10 +13,14 @@ public class PackageNode {
 
     private String name;
 
-    @Relationship(type = "RATED", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "HAS_PACKAGE", direction = Relationship.Direction.INCOMING)
     private PackageNode packageParent;
 
     public PackageNode() {
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public PackageNode(String name) {

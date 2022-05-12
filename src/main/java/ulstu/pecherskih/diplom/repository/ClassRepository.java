@@ -11,9 +11,6 @@ public interface ClassRepository extends Neo4jRepository<ClassNode, Long> {
 //    @Query("MATCH (u:MyClass)<-[r:RATED]-(m:MyMethod) RETURN u,r,m")
     @Query("MATCH (n:MyClass) RETURN n LIMIT 25")
     Collection<ClassNode> getAllMyClasses();
-
-    @Query("MATCH (n) DETACH DELETE n")
-    void deleteAll();
 }
 
 // MATCH (n) DETACH DELETE n - все удалить
