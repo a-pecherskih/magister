@@ -33,4 +33,11 @@ public interface CustomRepository extends Neo4jRepository<ResultDTO, Long> {
             "WITH {countNodes: cnt} as ResultDTO\n" +
             "RETURN ResultDTO")
     ResultDTO getCountNodes(Long id);
+
+//    MATCH p=(o{name:"root"})-[r*]-()
+//    WITH [x in nodes(p) | CASE WHEN EXISTS(x.name) THEN x.name ELSE x.type END] as names, [x in nodes(p) | ID(x)] as ids
+//    WITH names,  apoc.util.md5(names) as hash, ids
+//    WITH names, hash, collect(ids) as ids
+//    RETURN names, hash, ids, length(ids) as length
+
 }
