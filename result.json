@@ -1,0 +1,25 @@
+[ {
+  "id" : 1296,
+  "numberOfMatches" : null,
+  "countNodes" : 135,
+  "commonNodeDTOs" : [ {
+    "id" : 1517,
+    "numberOfMatches" : 56,
+    "countNodes" : null,
+    "commonNodeDTOs" : [ ],
+    "percent" : 41
+  } ],
+  "percent" : null
+}, {
+  "id" : 1517,
+  "numberOfMatches" : null,
+  "countNodes" : 115,
+  "commonNodeDTOs" : [ {
+    "id" : 1296,
+    "numberOfMatches" : 56,
+    "countNodes" : null,
+    "commonNodeDTOs" : [ ],
+    "percent" : 49
+  } ],
+  "percent" : null
+} ]

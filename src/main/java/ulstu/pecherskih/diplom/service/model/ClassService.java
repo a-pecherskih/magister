@@ -30,8 +30,4 @@ public class ClassService {
 
         return classRepository.save(classNode);
     }
-
-    public void deleteAll() {
-        classRepository.deleteAll();
-    }
 }

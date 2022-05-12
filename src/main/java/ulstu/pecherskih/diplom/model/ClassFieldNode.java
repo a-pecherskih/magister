@@ -16,7 +16,7 @@ public class ClassFieldNode {
     private String type;
     private String modifier;
 
-    @Relationship(type = "FIELD-CLASS", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "HAS_FIELD", direction = Relationship.Direction.OUTGOING)
     private ClassNode classNode;
 
     public ClassFieldNode() {

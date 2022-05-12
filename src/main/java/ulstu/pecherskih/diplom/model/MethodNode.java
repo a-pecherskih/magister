@@ -15,7 +15,7 @@ public class MethodNode {
 
     private String returnType;
 
-    @Relationship(type = "METHOD-CLASS", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "HAS_METHOD", direction = Relationship.Direction.OUTGOING)
     private ClassNode classNode;
 
     public MethodNode() {

@@ -15,9 +15,9 @@ public class VariableNode {
     private String type;
     private String value;
 
-    @Relationship(type = "VAR", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "HAS_VAR", direction = Relationship.Direction.OUTGOING)
     private ClassNode classNode;
-    @Relationship(type = "VAR", direction = Relationship.Direction.OUTGOING)
+    @Relationship(type = "HAS_VAR", direction = Relationship.Direction.OUTGOING)
     private MethodNode methodNode;
 
     public VariableNode() {

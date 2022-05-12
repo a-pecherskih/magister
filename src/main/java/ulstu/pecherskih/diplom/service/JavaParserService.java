@@ -210,7 +210,7 @@ public class JavaParserService {
                 type = "BREAK";
             } else if (s instanceof ContinueStmt) {
                 type = "CONTINUE";
-            } else {
+            } else { //emptySTMT
                 type = "other 3";
             }
 

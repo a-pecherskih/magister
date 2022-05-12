@@ -9,6 +9,9 @@ import ulstu.pecherskih.diplom.model.PackageNode;
 import ulstu.pecherskih.diplom.modelDTO.*;
 import ulstu.pecherskih.diplom.service.model.*;
 
+import java.nio.file.Paths;
+import java.util.Collection;
+
 @Service
 public class GraphService {
 
@@ -26,10 +29,12 @@ public class GraphService {
     BlockStmtService blockStmtService;
 
 
-    public void buildGraph(PackageDTO mainPackageDTO) {
+    public Long buildGraph(PackageDTO mainPackageDTO) {
         PackageNode packageNode = packageService.save(mainPackageDTO);
 
         this.saveChildren(mainPackageDTO, packageNode);
+
+        return packageNode.getId();
     }
 
     private void saveChildren(PackageDTO currentPackageDTO, PackageNode parentPackageNode) {
@@ -55,5 +60,17 @@ public class GraphService {
                 classFieldService.save(classFieldDTO, classNode);
             }
         }
+    }
+
+    public Collection<PackageNode> getRootPackages() {
+        return packageService.getRootPackages();
+    }
+
+
+    public void deleteAll() {
+        this.packageService.deleteAll();
+        Paths.get("rootHashes.json").toFile().delete();
+        Paths.get("idsHashes.json").toFile().delete();
+        Paths.get("result.json").toFile().delete();
     }
 }
