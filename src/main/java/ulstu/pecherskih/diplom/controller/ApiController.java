@@ -43,14 +43,14 @@ public class ApiController {
 
     @RequestMapping("/pars")
     public void pars() throws IOException {
-        Long id = this.parseProject("D:/0_Магистратура/курсач/test");
+        Long id = this.parseProject("D:\\0_Магистратура\\курсач\\Create-mc1.14-dev");
 
         this.hashService.checkGraph(id);
     }
 
     @RequestMapping("/pars2")
     public void pars2() throws IOException {
-        Long id = this.parseProject("D:/0_Магистратура/курсач/test2");
+        Long id = this.parseProject("D:\\0_Магистратура\\курсач\\Create-mc1.15-dev");
 
         this.hashService.checkGraph(id);
     }

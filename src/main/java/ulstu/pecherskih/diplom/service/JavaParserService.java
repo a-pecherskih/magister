@@ -264,7 +264,7 @@ public class JavaParserService {
         if (result.size() < 2) {
             Optional<Statement> s = ((IfStmt) cycleBlock).getElseStmt();
 
-            if (s.isPresent()) {
+            if (s.isPresent() && s.get() instanceof IfStmt) {
                 List<BlockStmtDTO> elseIfBLocks = this.parseIf(s.get());
 
                 result.addAll(elseIfBLocks);
