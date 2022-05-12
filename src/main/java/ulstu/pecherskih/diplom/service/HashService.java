@@ -77,7 +77,6 @@ public class HashService {
         }
 
         this.saveHashesById(allHashes, id);
-        this.compareHashes(allHashes, id);
     }
 
     private void saveHashesById(Map<String, List<Integer>> allHashes, Long id) throws IOException {
