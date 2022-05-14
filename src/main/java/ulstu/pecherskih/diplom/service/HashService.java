@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ulstu.pecherskih.diplom.HashDTO.CommonNodeDTO;
+import ulstu.pecherskih.diplom.HashDTO.HashDTO;
+import ulstu.pecherskih.diplom.HashDTO.NodeDiffDTO;
 import ulstu.pecherskih.diplom.HashDTO.ResultDTO;
 import ulstu.pecherskih.diplom.repository.CustomRepository;
 import ulstu.pecherskih.diplom.repository.PackageRepository;
@@ -16,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class HashService {
@@ -64,72 +68,117 @@ public class HashService {
     }
 
     public void saveHashes(Long id) throws IOException {
-        Map<String, List<Integer>> allHashes = new HashMap<String, List<Integer>>();
+        Map<String, List<HashDTO>> allHashes = new HashMap<String, List<HashDTO>>();
 
         if (this.existFile("idsHashes.json")) {
             ObjectMapper mapper = new ObjectMapper();
-            allHashes = mapper.readValue(Paths.get("idsHashes.json").toFile(), Map.class);
+            allHashes = mapper.readValue(Paths.get("idsHashes.json").toFile(), new TypeReference<Map<String, List<HashDTO>>>(){});
 
             if (allHashes != null && allHashes.size() > 0) {
-                this.compareHashes(allHashes, id);
+                this.countHashes(allHashes, id);
             }
             return;
         }
 
-        this.saveHashesById(allHashes, id);
+        this.saveHashesToFile(allHashes, id);
     }
 
-    private void saveHashesById(Map<String, List<Integer>> allHashes, Long id) throws IOException {
+    private void saveHashesToFile(Map<String, List<HashDTO>> allHashes, Long id) throws IOException {
         Collection<ResultDTO> hashesById = customRepository.getPathHashFromRoot(id);
 
         for (ResultDTO resultDTO : hashesById) {
-            List<Integer> ids = allHashes.get(resultDTO.getHash());
-            if (ids == null) {
-                ids = new ArrayList<>();
+            List<HashDTO> nodesByHash = allHashes.get(resultDTO.getHash());
+
+            if (nodesByHash == null) {
+                nodesByHash = new ArrayList<>();
             } else {
-                if (ids.contains(this.longToInteger(id))) continue;
+                HashDTO findHashByIdInFile = nodesByHash.stream()
+                        .filter(item -> item.getRootId().equals(this.longToInteger(id)))
+                        .findAny()
+                        .orElse(null);
+
+                if (findHashByIdInFile != null) continue;
             }
 
-            ids.add(this.longToInteger(id));
-            allHashes.put(resultDTO.getHash(), ids);
+            HashDTO newNodeHashInFile = new HashDTO();
+            newNodeHashInFile.setRootId(this.longToInteger(id));
+            newNodeHashInFile.setPathIds(resultDTO.getPathIds());
+
+            nodesByHash.add(newNodeHashInFile);
+            allHashes.put(resultDTO.getHash(), nodesByHash);
         }
 
         ObjectWriter objectMapper = new ObjectMapper().writer().withDefaultPrettyPrinter();
         objectMapper.writeValue(Paths.get("idsHashes.json").toFile(), allHashes);
+
+        this.countHashes(allHashes, id);
     }
 
     private Integer longToInteger(Long num) {
         return num.intValue();
     }
 
-    private void compareHashes(Map<String, List<Integer>> allHashes, Long id) throws IOException {
-        Map<Integer, Integer> counter = new HashMap<>();
+    private void countHashes(Map<String, List<HashDTO>> allHashes, Long id) throws IOException {
+        if (!this.existInFile(allHashes, id)) {
+            this.saveHashesToFile(allHashes, id);
+        }
 
-        boolean hasHashInFile = false;
-        for (Map.Entry<String, List<Integer>> entry : allHashes.entrySet()) {
-            List<Integer> ids = entry.getValue();
-            if (entry.getValue().contains(this.longToInteger(id))) {
-                hasHashInFile = true;
+        Map<Integer, NodeDiffDTO> counter = new HashMap<>();
 
-                for (Integer otherId : ids) {
-                    if (!otherId.equals(this.longToInteger(id))) {
-                        Integer count = counter.get(otherId);
-                        if (count == null) {
-                            counter.put(otherId, 0);
-                        } else {
-                            counter.put(otherId, count + 1);
-                        }
-                    }
+        for (Map.Entry<String, List<HashDTO>> entry : allHashes.entrySet()) {
+            List<HashDTO> nodesByHash = entry.getValue();
+
+            HashDTO findNodeByHash = nodesByHash.stream()
+                    .filter(item -> item.getRootId().equals(this.longToInteger(id)))
+                    .findAny()
+                    .orElse(null);
+            boolean isFind = findNodeByHash != null;
+
+            for (HashDTO nodeByHash : nodesByHash) {
+                if (nodeByHash.getRootId().equals(this.longToInteger(id))) continue;
+
+                NodeDiffDTO nodeDiffDTO = new NodeDiffDTO();
+
+                NodeDiffDTO nodeDiffDTOExist = counter.get(nodeByHash.getRootId());
+                if (nodeDiffDTOExist != null) {
+                    nodeDiffDTO = nodeDiffDTOExist;
                 }
+
+                nodeDiffDTO.setRootId(nodeByHash.getRootId());
+
+                String hash = entry.getKey();
+                List<Integer> paths =  nodeByHash.getPathIds();
+
+                if (isFind) {
+                    nodeDiffDTO.addEqualsPath(hash, paths);
+                } else {
+                    nodeDiffDTO.addDiffPath(hash, paths);
+                }
+
+                counter.put(nodeDiffDTO.getRootId(), nodeDiffDTO);
             }
         }
 
-        if (!hasHashInFile) {
-            this.saveHashesById(allHashes, id);
-            this.compareHashes(allHashes, id);
-        } else if (counter.size() > 0) {
-            this.writeResult2(counter, id);
+        this.writeResult2(counter, id);
+    }
+
+    private boolean existInFile(Map<String, List<HashDTO>> allHashes, Long id) {
+        boolean hasHashInFile = false;
+
+        for (Map.Entry<String, List<HashDTO>> entry : allHashes.entrySet()) {
+            List<HashDTO> nodesByHash = entry.getValue();
+
+            HashDTO findNodeByHash = nodesByHash.stream()
+                    .filter(item -> item.getRootId().equals(longToInteger(id)))
+                    .findAny().orElse(null);
+
+            if (findNodeByHash != null) {
+                hasHashInFile = true;
+                break;
+            }
         }
+
+        return hasHashInFile;
     }
 
     private void writeResult(Map<Integer, Integer> counter, Long id) throws IOException {
@@ -137,7 +186,7 @@ public class HashService {
 
         if (this.existFile("result.json")) {
             ObjectMapper mapper = new ObjectMapper();
-            result = mapper.readValue(Paths.get("result.json").toFile(), Map.class);
+            result = mapper.readValue(Paths.get("result.json").toFile(), new TypeReference<Map<Integer, Map<Integer, Integer>>>(){});
         }
 
         Map<Integer, Integer> countCommonNodes = new HashMap<>();
@@ -151,7 +200,7 @@ public class HashService {
         objectMapper.writeValue(Paths.get("result.json").toFile(), result);
     }
 
-    private void writeResult2(Map<Integer, Integer> counter, Long id) throws IOException {
+    private void writeResult2(Map<Integer, NodeDiffDTO> counter, Long id) throws IOException {
         Integer countNodesById = customRepository.getCountNodes(id).getCountNodes();
         List<CommonNodeDTO> result = new ArrayList<>();
 
@@ -173,14 +222,8 @@ public class HashService {
             }
         }
 
-        for (Map.Entry<Integer, Integer> entry : counter.entrySet()) {
-            CommonNodeDTO relationNode = new CommonNodeDTO();
-            relationNode.setId(entry.getKey());
-            relationNode.setNumberOfMatches(entry.getValue());
-
-            relationNode.setPercent(this.calcPecent(relationNode.getNumberOfMatches(), myNode.getCountNodes()));
-
-            myNode.addCommonNodeDTO(relationNode);
+        for (Map.Entry<Integer, NodeDiffDTO> entry : counter.entrySet()) {
+            myNode.addCommonNodeDTO(entry.getValue());
         }
 
         result.add(myNode);

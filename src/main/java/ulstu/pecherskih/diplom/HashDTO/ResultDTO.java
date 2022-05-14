@@ -15,6 +15,7 @@ public class ResultDTO {
     private Long id;
     private String hash;
     private List<String> names;
+    private List<Integer> pathIds;
     private List<Integer> rootIds;
     private Integer countNodes;
 
@@ -54,10 +55,18 @@ public class ResultDTO {
     }
 
     public Integer getCountNodes() {
-        return countNodes;
+        return (countNodes == 0) ? 0 : countNodes + 1;
     }
 
     public void setCountNodes(Integer countNodes) {
         this.countNodes = countNodes;
+    }
+
+    public List<Integer> getPathIds() {
+        return pathIds;
+    }
+
+    public void setPathIds(List<Integer> pathIds) {
+        this.pathIds = pathIds;
     }
 }
