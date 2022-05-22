@@ -7,7 +7,7 @@ public class CommonNodeDTO {
     Integer id;
     Integer numberOfMatches;
     Integer countNodes;
-    List<CommonNodeDTO> commonNodeDTOs;
+    List<NodeDiffDTO> commonNodeDTOs;
     Integer percent;
 
     public CommonNodeDTO() {
@@ -30,15 +30,15 @@ public class CommonNodeDTO {
         this.numberOfMatches = numberOfMatches;
     }
 
-    public List<CommonNodeDTO> getCommonNodeDTOs() {
+    public List<NodeDiffDTO> getCommonNodeDTOs() {
         return commonNodeDTOs;
     }
 
-    public void setCommonNodeDTOs(List<CommonNodeDTO> commonNodeDTOs) {
+    public void setCommonNodeDTOs(List<NodeDiffDTO> commonNodeDTOs) {
         this.commonNodeDTOs = commonNodeDTOs;
     }
 
-    public void addCommonNodeDTO(CommonNodeDTO commonNodeDTO) {
+    public void addCommonNodeDTO(NodeDiffDTO commonNodeDTO) {
         this.commonNodeDTOs.add(commonNodeDTO);
     }
 

@@ -13,6 +13,10 @@ public class PackageNode {
 
     private String name;
 
+    private String path;
+
+    private String author;
+
     @Relationship(type = "HAS_PACKAGE", direction = Relationship.Direction.INCOMING)
     private PackageNode packageParent;
 

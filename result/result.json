@@ -1,25 +1,25 @@
 [ {
-  "id" : 1296,
+  "id" : 6423,
   "numberOfMatches" : null,
-  "countNodes" : 135,
+  "countNodes" : 49,
   "commonNodeDTOs" : [ {
-    "id" : 1517,
-    "numberOfMatches" : 56,
+    "id" : 7866,
+    "numberOfMatches" : 36,
     "countNodes" : null,
     "commonNodeDTOs" : [ ],
-    "percent" : 41
+    "percent" : 73
   } ],
   "percent" : null
 }, {
-  "id" : 1517,
+  "id" : 7866,
   "numberOfMatches" : null,
-  "countNodes" : 115,
+  "countNodes" : 49,
   "commonNodeDTOs" : [ {
-    "id" : 1296,
-    "numberOfMatches" : 56,
+    "id" : 6423,
+    "numberOfMatches" : 36,
     "countNodes" : null,
     "commonNodeDTOs" : [ ],
-    "percent" : 49
+    "percent" : 73
   } ],
   "percent" : null
 } ]

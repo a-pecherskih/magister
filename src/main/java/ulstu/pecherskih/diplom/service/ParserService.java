@@ -3,6 +3,7 @@ package ulstu.pecherskih.diplom.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ulstu.pecherskih.diplom.modelDTO.FileInfoDTO;
+import ulstu.pecherskih.diplom.modelDTO.PackageDTO;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,7 +13,29 @@ import java.util.List;
 @Service
 public class ParserService {
 
-    public FileInfoDTO parser(String path) throws FileNotFoundException {
+    @Autowired
+    JavaParserService javaParserService;
+    @Autowired
+    GraphService graphService;
+
+    public ParserService(JavaParserService javaParserService, GraphService graphService) {
+        this.javaParserService = javaParserService;
+        this.graphService = graphService;
+    }
+
+    public Long parseProject(String path) throws FileNotFoundException {
+        FileInfoDTO project = this.parser(path);
+
+        PackageDTO packageDTO = this.javaParserService.fillProject(project);
+
+        if (packageDTO != null) {
+            return this.graphService.buildGraph(packageDTO);
+        }
+
+        return 0L;
+    }
+
+    private FileInfoDTO parser(String path) throws FileNotFoundException {
         File dir = new File(path);
 
         /**

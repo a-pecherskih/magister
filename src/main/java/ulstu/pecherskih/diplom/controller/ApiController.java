@@ -1,8 +1,9 @@
 package ulstu.pecherskih.diplom.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import ulstu.pecherskih.diplom.model.ClassNode;
 import ulstu.pecherskih.diplom.model.PackageNode;
 import ulstu.pecherskih.diplom.modelDTO.FileInfoDTO;
@@ -43,14 +44,21 @@ public class ApiController {
 
     @RequestMapping("/pars")
     public void pars() throws IOException {
-        Long id = this.parseProject("D:\\0_Магистратура\\курсач\\Create-mc1.14-dev");
+        Long id = this.parseProject("D:\\0_Магистратура\\курсач\\test3");
 
         this.hashService.checkGraph(id);
     }
 
     @RequestMapping("/pars2")
     public void pars2() throws IOException {
-        Long id = this.parseProject("D:\\0_Магистратура\\курсач\\Create-mc1.15-dev");
+        Long id = this.parseProject("D:\\0_Магистратура\\курсач\\test4");
+
+        this.hashService.checkGraph(id);
+    }
+
+    @RequestMapping("/pars3")
+    public void pars3() throws IOException {
+        Long id = this.parseProject("D:\\0_Магистратура\\курсач\\test2");
 
         this.hashService.checkGraph(id);
     }
