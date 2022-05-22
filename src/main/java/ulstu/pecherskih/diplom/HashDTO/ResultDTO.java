@@ -7,6 +7,9 @@ import org.springframework.data.neo4j.core.schema.Node;
 
 import java.util.List;
 
+/**
+ * Для получения хэшей из базы для проекта
+ */
 @Node("ResultDTO")
 public class ResultDTO {
 
